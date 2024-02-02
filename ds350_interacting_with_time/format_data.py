@@ -10,11 +10,24 @@ tickers_use = ["CXW", "F", "GM", "KR", "WDC", "NKE","T", "WDAY", "WFC", "WMT", "
 # %%
 # example for one ticker
 msft = yf.Ticker("MSFT")
-msft.history(period="2y", interval="1h")
+msft.history(period="2y", interval="1d")
 
 # %%
 dat = yf.download(tickers_use, period="5y", interval="1d").reset_index()
 
+#%%
+df = pl.from_pandas(dat)
+(df.melt(id_vars="('Date', '')")
+    .with_columns(ticker=pl.col('variable').str.replace_many(["'",")","("," "],"").str.split_exact(',',1))
+    .unnest(columns='ticker')
+    .rename({"('Date', '')":'date'})
+    .pivot(index=["date",'field_1'],
+            values='value',
+            columns='field_0')
+            #might need aggregate function
+    .rename({'field_1':'ticker'})
+    .write_parquet('stock.parquet')
+)
 # %%
 # We want this.
 # ┌────────┬──────────────┬───────────┬───────────┬───────────┬───────────┬───────────┬──────────┐

@@ -1,0 +1,74 @@
+---
+title: "Car Crashes"
+format: html
+code-fold: true
+---
+
+2023 saw another rise in car-related fatalities, according to a recent in-depth [New York Times article](https://www.nytimes.com/2024/01/10/magazine/dangerous-driving.html). Let's explore what that looks like for car crashes in New York.
+
+```{python}
+import polars as pl
+from lets_plot import *
+LetsPlot.setup_html()
+dat = pl.read_parquet("ny_crashes.parquet")
+```
+
+
+```{python}
+day_hours = dat.with_columns(Date_Hour = pl.col('date_time').dt.truncate('1h'))
+new = day_hours.group_by('Date_Hour') \
+    .agg(Deaths=(pl.col('NUMBER OF PEDESTRIANS KILLED')+pl.col('NUMBER OF PERSONS KILLED')).sum(),
+         Injuries=(pl.col('NUMBER OF PEDESTRIANS INJURED')+pl.col('NUMBER OF PERSONS INJURED')).sum(),
+         Accidents=pl.col('Date_Hour').count())
+new.head()
+```
+
+
+```{python}
+timeline = new.with_columns(Day_Month=pl.col('Date_Hour').dt.truncate('1w'))\
+    .group_by(pl.col('Day_Month'))\
+    .agg(Injuries = pl.col('Injuries').sum(),
+         Accidents = pl.col('Accidents').sum(),
+         Deaths = pl.col('Deaths').sum())\
+    .with_columns(Year=pl.col('Day_Month').dt.year().cast(str),
+                    Week = pl.col('Day_Month').dt.week())\
+    .sort(pl.col('Week'))\
+    .filter(pl.col('Year').is_in(['2019','2022','2023']))
+
+ggplot(timeline,aes(x='Week',y='Accidents',group='Year',color='Year')) +\
+    geom_path() +\
+    labs(x='Week of the Year',y='Number of Accidents that week',
+    title='Overall crashes are down, at least in New York')
+```
+
+Judging by this graph, it looks like overall crashes have gone way down, at least in New York. The pandemic dropped car activity and crashes a lot, and it looks like those traffic trends never "recovered".
+
+```{python}
+ratio = new.with_columns(Hour=pl.col('Date_Hour').dt.hour()) \
+    .group_by('Hour') \
+    .agg(Deaths=pl.col('Deaths').sum(),
+        Injuries=pl.col('Injuries').sum())\
+    .with_columns(Ratio=(pl.col('Deaths') / (pl.col('Deaths')+pl.col('Injuries'))))
+```
+
+One thing the article focuses on was the severity of accidents. As less people are driving, people are more likely to speed and act carelessly, which means the accidents that do happen are more deadly.
+
+The article focused on a yearly basis, but lets compare that across a day. Roads are less busy in the late night than in the mornings, so even though there are less accidents, we'd expect to have more deadly crashes. Visibility and drunkenness should make the difference more pronounced.
+
+```{python}
+ratio = new.with_columns(Hour=pl.col('Date_Hour').dt.hour()) \
+    .group_by('Hour') \
+    .agg(Accidents=pl.col('Accidents').sum(),
+        Injuries=pl.col('Injuries').sum(),
+        Deaths=pl.col('Deaths').sum())\
+    .sort('Hour') \
+    .with_columns(Ratio=((pl.col('Deaths')*100) / (pl.col('Deaths')+pl.col('Injuries'))))
+
+ggplot(ratio,aes(y='Ratio',x='Hour')) + geom_path() +\
+    scale_y_continuous(breaks=[0.5,1,1.5,1.9],labels=['.5%','1%','1.5%','1.9%']) +\
+    scale_x_continuous(breaks=[0,6,12,18],labels=['Midnight','6am','Noon','6pm']) +\
+    labs(x='Time of Day',y='Percentage of all injuries that are fatal',
+         title='Night crashes are more likely to be deadly')
+```
+
+Business hours are a very safe time to drive, but the late night between 3-5am become extra dangerous times to drive.

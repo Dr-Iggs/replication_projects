@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Car Crashes</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="crashes_files/libs/clipboard/clipboard.min.js"></script>
+<script src="crashes_files/libs/quarto-html/quarto.js"></script>
+<script src="crashes_files/libs/quarto-html/popper.min.js"></script>
+<script src="crashes_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="crashes_files/libs/quarto-html/anchor.min.js"></script>
+<link href="crashes_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="crashes_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="crashes_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="crashes_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="crashes_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Car Crashes</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>2023 saw another rise in car-related fatalities, according to a recent in-depth <a href="https://www.nytimes.com/2024/01/10/magazine/dangerous-driving.html">New York Times article</a>. Let’s explore what that looks like for car crashes in New York.</p>
+<div class="cell" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lets_plot <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>LetsPlot.setup_html()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>dat <span class="op">=</span> pl.read_parquet(<span class="st">"ny_crashes.parquet"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+
+            <div id="bSBrEC"></div>
+            <script type="text/javascript" data-lets-plot-script="library">
+                if(!window.letsPlotCallQueue) {
+                    window.letsPlotCallQueue = [];
+                }; 
+                window.letsPlotCall = function(f) {
+                    window.letsPlotCallQueue.push(f);
+                };
+                (function() {
+                    var script = document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = "https://cdn.jsdelivr.net/gh/JetBrains/lets-plot@v4.2.0/js-package/distr/lets-plot.min.js";
+                    script.onload = function() {
+                        window.letsPlotCall = function(f) {f();};
+                        window.letsPlotCallQueue.forEach(function(f) {f();});
+                        window.letsPlotCallQueue = [];
+                        
+                    };
+                    script.onerror = function(event) {
+                        window.letsPlotCall = function(f) {};    // noop
+                        window.letsPlotCallQueue = [];
+                        var div = document.createElement("div");
+                        div.style.color = 'darkred';
+                        div.textContent = 'Error loading Lets-Plot JS';
+                        document.getElementById("bSBrEC").appendChild(div);
+                    };
+                    var e = document.getElementById("bSBrEC");
+                    e.appendChild(script);
+                })()
+            </script>
+            
+</div>
+</div>
+<div class="cell" data-execution_count="2">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>day_hours <span class="op">=</span> dat.with_columns(Date_Hour <span class="op">=</span> pl.col(<span class="st">'date_time'</span>).dt.truncate(<span class="st">'1h'</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>new <span class="op">=</span> day_hours.group_by(<span class="st">'Date_Hour'</span>) <span class="op">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    .agg(Deaths<span class="op">=</span>(pl.col(<span class="st">'NUMBER OF PEDESTRIANS KILLED'</span>)<span class="op">+</span>pl.col(<span class="st">'NUMBER OF PERSONS KILLED'</span>)).<span class="bu">sum</span>(),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>         Injuries<span class="op">=</span>(pl.col(<span class="st">'NUMBER OF PEDESTRIANS INJURED'</span>)<span class="op">+</span>pl.col(<span class="st">'NUMBER OF PERSONS INJURED'</span>)).<span class="bu">sum</span>(),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>         Accidents<span class="op">=</span>pl.col(<span class="st">'Date_Hour'</span>).count())</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>new.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 4)</small>
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Date_Hour</th>
+<th data-quarto-table-cell-role="th">Deaths</th>
+<th data-quarto-table-cell-role="th">Injuries</th>
+<th data-quarto-table-cell-role="th">Accidents</th>
+</tr>
+<tr class="odd">
+<th>datetime[μs]</th>
+<th>i64</th>
+<th>i64</th>
+<th>u32</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2017-05-16 20:00:00</td>
+<td>0</td>
+<td>5</td>
+<td>22</td>
+</tr>
+<tr class="even">
+<td>2018-10-17 12:00:00</td>
+<td>0</td>
+<td>10</td>
+<td>41</td>
+</tr>
+<tr class="odd">
+<td>2017-10-16 00:00:00</td>
+<td>0</td>
+<td>10</td>
+<td>21</td>
+</tr>
+<tr class="even">
+<td>2016-09-17 14:00:00</td>
+<td>0</td>
+<td>13</td>
+<td>45</td>
+</tr>
+<tr class="odd">
+<td>2015-07-23 09:00:00</td>
+<td>0</td>
+<td>22</td>
+<td>30</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="3">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>timeline <span class="op">=</span> new.with_columns(Day_Month<span class="op">=</span>pl.col(<span class="st">'Date_Hour'</span>).dt.truncate(<span class="st">'1w'</span>))<span class="op">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    .group_by(pl.col(<span class="st">'Day_Month'</span>))<span class="op">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    .agg(Injuries <span class="op">=</span> pl.col(<span class="st">'Injuries'</span>).<span class="bu">sum</span>(),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>         Accidents <span class="op">=</span> pl.col(<span class="st">'Accidents'</span>).<span class="bu">sum</span>(),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>         Deaths <span class="op">=</span> pl.col(<span class="st">'Deaths'</span>).<span class="bu">sum</span>())<span class="op">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    .with_columns(Year<span class="op">=</span>pl.col(<span class="st">'Day_Month'</span>).dt.year().cast(<span class="bu">str</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                    Week <span class="op">=</span> pl.col(<span class="st">'Day_Month'</span>).dt.week())<span class="op">\</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    .sort(pl.col(<span class="st">'Week'</span>))<span class="op">\</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">'Year'</span>).is_in([<span class="st">'2019'</span>,<span class="st">'2022'</span>,<span class="st">'2023'</span>]))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>ggplot(timeline,aes(x<span class="op">=</span><span class="st">'Week'</span>,y<span class="op">=</span><span class="st">'Accidents'</span>,group<span class="op">=</span><span class="st">'Year'</span>,color<span class="op">=</span><span class="st">'Year'</span>)) <span class="op">+\</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    geom_path() <span class="op">+\</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    labs(x<span class="op">=</span><span class="st">'Week of the Year'</span>,y<span class="op">=</span><span class="st">'Number of Accidents that week'</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">'Overall crashes are down, at least in New York'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="3">
+   <div id="5jkwKx"></div>
+   <script type="text/javascript" data-lets-plot-script="plot">
+       (function() {
+           var plotSpec={
+"data":{
+"Accidents":[2820.0,1520.0,1768.0,3787.0,1730.0,1831.0,3972.0,1735.0,1746.0,3828.0,1707.0,1794.0,1747.0,1955.0,4195.0,1754.0,1914.0,4070.0,1817.0,1900.0,4148.0,1656.0,3531.0,1580.0,1914.0,4454.0,1844.0,1998.0,3924.0,1812.0,4046.0,1880.0,2104.0,4062.0,1772.0,1983.0,3871.0,1857.0,1961.0,4203.0,1707.0,1998.0,4045.0,1649.0,2037.0,3861.0,1891.0,1846.0,3568.0,1997.0,2122.0,4152.0,1992.0,2084.0,4405.0,2110.0,2114.0,4489.0,2097.0,2262.0,1989.0,2116.0,4607.0,1921.0,2157.0,4159.0,1842.0,2195.0,4513.0,2288.0,4493.0,2031.0,2223.0,4526.0,1866.0,2066.0,4912.0,1804.0,3786.0,1800.0,1918.0,4266.0,1911.0,1994.0,4274.0,1920.0,2086.0,4204.0,1873.0,2044.0,4184.0,1858.0,2113.0,4122.0,1884.0,2114.0,3689.0,1817.0,1944.0,3811.0,1689.0,1917.0,3773.0,1855.0,1976.0,3849.0,1918.0,2052.0,4300.0,1914.0,2187.0,1952.0,2089.0,4245.0,1917.0,1989.0,4239.0,2045.0,3967.0,1964.0,1983.0,3645.0,1910.0,2000.0,3935.0,2019.0,2072.0,4042.0,2017.0,4224.0,1818.0,2018.0,3982.0,1770.0,1853.0,3812.0,2004.0,2008.0,4224.0,1809.0,1819.0,3577.0,1854.0,1897.0,3933.0,1779.0,1963.0,4421.0,1931.0,2072.0,4347.0,1891.0,1860.0,2988.0,1516.0,1649.0],
+"Year":["2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2023","2022","2019","2023","2022","2019","2023","2022","2019","2022","2019","2023","2022","2019","2023","2022","2019","2023","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2023","2022","2019","2023","2022","2019","2023","2022","2019","2022","2019","2023","2022","2019","2023","2022","2019","2023","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2023","2022","2019","2023","2022","2019","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022","2019","2023","2022"],
+"Week":[1.0,1.0,1.0,2.0,2.0,2.0,3.0,3.0,3.0,4.0,4.0,4.0,5.0,5.0,5.0,6.0,6.0,6.0,7.0,7.0,7.0,8.0,8.0,8.0,9.0,9.0,9.0,10.0,10.0,10.0,11.0,11.0,11.0,12.0,12.0,12.0,13.0,13.0,13.0,14.0,14.0,14.0,15.0,15.0,15.0,16.0,16.0,16.0,17.0,17.0,17.0,18.0,18.0,18.0,19.0,19.0,19.0,20.0,20.0,20.0,21.0,21.0,21.0,22.0,22.0,22.0,23.0,23.0,23.0,24.0,24.0,24.0,25.0,25.0,25.0,26.0,26.0,26.0,27.0,27.0,27.0,28.0,28.0,28.0,29.0,29.0,29.0,30.0,30.0,30.0,31.0,31.0,31.0,32.0,32.0,32.0,33.0,33.0,33.0,34.0,34.0,34.0,35.0,35.0,35.0,36.0,36.0,36.0,37.0,37.0,37.0,38.0,38.0,38.0,39.0,39.0,39.0,40.0,40.0,40.0,41.0,41.0,41.0,42.0,42.0,42.0,43.0,43.0,43.0,44.0,44.0,44.0,45.0,45.0,45.0,46.0,46.0,46.0,47.0,47.0,47.0,48.0,48.0,48.0,49.0,49.0,49.0,50.0,50.0,50.0,51.0,51.0,51.0,52.0,52.0,52.0]
+},
+"mapping":{
+"x":"Week",
+"y":"Accidents",
+"group":"Year",
+"color":"Year"
+},
+"data_meta":{
+},
+"ggtitle":{
+"text":"Overall crashes are down, at least in New York"
+},
+"kind":"plot",
+"scales":[{
+"name":"Week of the Year",
+"aesthetic":"x"
+},{
+"name":"Number of Accidents that week",
+"aesthetic":"y"
+}],
+"layers":[{
+"geom":"path",
+"mapping":{
+},
+"data_meta":{
+},
+"data":{
+}
+}],
+"metainfo_list":[]
+};
+           var plotContainer = document.getElementById("5jkwKx");
+           window.letsPlotCall(function() {{
+               LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
+           }});
+       })();    
+   </script>
+</div>
+</div>
+<p>Judging by this graph, it looks like overall crashes have gone way down, at least in New York. The pandemic dropped car activity and crashes a lot, and it looks like those traffic trends never “recovered”.</p>
+<div class="cell" data-execution_count="4">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ratio <span class="op">=</span> new.with_columns(Hour<span class="op">=</span>pl.col(<span class="st">'Date_Hour'</span>).dt.hour()) <span class="op">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">'Hour'</span>) <span class="op">\</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    .agg(Deaths<span class="op">=</span>pl.col(<span class="st">'Deaths'</span>).<span class="bu">sum</span>(),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        Injuries<span class="op">=</span>pl.col(<span class="st">'Injuries'</span>).<span class="bu">sum</span>())<span class="op">\</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    .with_columns(Ratio<span class="op">=</span>(pl.col(<span class="st">'Deaths'</span>) <span class="op">/</span> (pl.col(<span class="st">'Deaths'</span>)<span class="op">+</span>pl.col(<span class="st">'Injuries'</span>))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>One thing the article focuses on was the severity of accidents. As less people are driving, people are more likely to speed and act carelessly, which means the accidents that do happen are more deadly.</p>
+<p>The article focused on a yearly basis, but lets compare that across a day. Roads are less busy in the late night than in the mornings, so even though there are less accidents, we’d expect to have more deadly crashes. Visibility and drunkenness should make the difference more pronounced.</p>
+<div class="cell" data-execution_count="5">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ratio <span class="op">=</span> new.with_columns(Hour<span class="op">=</span>pl.col(<span class="st">'Date_Hour'</span>).dt.hour()) <span class="op">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">'Hour'</span>) <span class="op">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .agg(Accidents<span class="op">=</span>pl.col(<span class="st">'Accidents'</span>).<span class="bu">sum</span>(),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        Injuries<span class="op">=</span>pl.col(<span class="st">'Injuries'</span>).<span class="bu">sum</span>(),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        Deaths<span class="op">=</span>pl.col(<span class="st">'Deaths'</span>).<span class="bu">sum</span>())<span class="op">\</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">'Hour'</span>) <span class="op">\</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(Ratio<span class="op">=</span>((pl.col(<span class="st">'Deaths'</span>)<span class="op">*</span><span class="dv">100</span>) <span class="op">/</span> (pl.col(<span class="st">'Deaths'</span>)<span class="op">+</span>pl.col(<span class="st">'Injuries'</span>))))</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>ggplot(ratio,aes(y<span class="op">=</span><span class="st">'Ratio'</span>,x<span class="op">=</span><span class="st">'Hour'</span>)) <span class="op">+</span> geom_path() <span class="op">+\</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    scale_y_continuous(breaks<span class="op">=</span>[<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="fl">1.5</span>,<span class="fl">1.9</span>],labels<span class="op">=</span>[<span class="st">'.5%'</span>,<span class="st">'1%'</span>,<span class="st">'1.5%'</span>,<span class="st">'1.9%'</span>]) <span class="op">+\</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    scale_x_continuous(breaks<span class="op">=</span>[<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">12</span>,<span class="dv">18</span>],labels<span class="op">=</span>[<span class="st">'Midnight'</span>,<span class="st">'6am'</span>,<span class="st">'Noon'</span>,<span class="st">'6pm'</span>]) <span class="op">+\</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    labs(x<span class="op">=</span><span class="st">'Time of Day'</span>,y<span class="op">=</span><span class="st">'Percentage of all injuries that are fatal'</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>         title<span class="op">=</span><span class="st">'Night crashes are more likely to be deadly'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="5">
+   <div id="xIXaiE"></div>
+   <script type="text/javascript" data-lets-plot-script="plot">
+       (function() {
+           var plotSpec={
+"data":{
+"Hour":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,21.0,22.0,23.0],
+"Ratio":[0.7977440540239694,1.1206012982576017,1.3020387185197875,1.6921606118546846,1.879238499877441,1.5683972154659063,1.1175095501453902,0.4970345000417676,0.37487526632325574,0.43986867688776976,0.588891211931145,0.4622496147919877,0.4460227272727273,0.4344946350510001,0.3602811950790861,0.3644436997319035,0.3469881429194591,0.4710507770483291,0.5335739647291916,0.5222287816175469,0.5869946382740833,0.7505672892302322,0.7166607482971237,0.9056171188383645]
+},
+"mapping":{
+"x":"Hour",
+"y":"Ratio"
+},
+"data_meta":{
+},
+"ggtitle":{
+"text":"Night crashes are more likely to be deadly"
+},
+"kind":"plot",
+"scales":[{
+"aesthetic":"y",
+"breaks":[0.5,1.0,1.5,1.9],
+"labels":[".5%","1%","1.5%","1.9%"]
+},{
+"aesthetic":"x",
+"breaks":[0.0,6.0,12.0,18.0],
+"labels":["Midnight","6am","Noon","6pm"]
+},{
+"name":"Time of Day",
+"aesthetic":"x"
+},{
+"name":"Percentage of all injuries that are fatal",
+"aesthetic":"y"
+}],
+"layers":[{
+"geom":"path",
+"mapping":{
+},
+"data_meta":{
+},
+"data":{
+}
+}],
+"metainfo_list":[]
+};
+           var plotContainer = document.getElementById("xIXaiE");
+           window.letsPlotCall(function() {{
+               LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
+           }});
+       })();    
+   </script>
+</div>
+</div>
+<p>Business hours are a very safe time to drive, but the late night between 3-5am become extra dangerous times to drive.</p>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

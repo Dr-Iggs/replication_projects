@@ -1,0 +1,63 @@
+---
+title: "Stock Study Replication"
+format: html
+author: "Spencer Driggs"
+code-fold: true
+---
+
+I've got money, so let's put it in the magic economy money machine. Here are all 10 of the stocks you recommended I look at over the last 5 years.
+
+```{python}
+import polars as pl
+from datetime import datetime
+from lets_plot import *
+LetsPlot.setup_html()
+pdat = pl.read_parquet("stock.parquet")
+```
+
+
+```{python}
+year_ticks = [datetime(2019, 1, 1, 0, 0),
+              datetime(2020, 1, 1, 0, 0),
+              datetime(2021, 1, 1, 0, 0),
+              datetime(2022, 1, 1, 0, 0),
+              datetime(2023, 1, 1, 0, 0),
+              datetime(2024, 1, 1, 0, 0)]
+
+ggplot(pdat,aes(x='date',y='Open',group='ticker',color='ticker')) +\
+    geom_path() +\
+    scale_x_continuous(breaks=year_ticks,labels=['2019','2020','2021','2022','2023']) +\
+    labs(x='Date',y='Daily Open Price',title='10 Stocks over 5 Years')
+```
+
+At a glance, none of the stocks have really lost any value in the last few years. But that's kind of a lot to look at. I don't care about day-to-day gains, so let's aggregate these by year and see how they compare.
+
+```{python}
+time_compare = pdat.with_columns(Year=pl.col('date').dt.year(),
+            Month=pl.col('date').dt.month(),
+            Day=pl.col('date').dt.day())\
+            .filter((pl.col('Year').is_in([2023,2019])) & (pl.col('Month')==1) & (pl.col('Day').is_in([3,28]))) \
+            .select(['ticker','Year','Open']) \
+            .pivot(values='Open',index='ticker',columns='Year') \
+            .with_columns(Color=pl.when(pl.col('2023')>pl.col('2019')).then(pl.lit('increased')).otherwise(pl.lit('decreased')))
+ggplot(time_compare,aes(y='ticker', group='ticker',color='Color')) +\
+    geom_linerange(aes(xmin='2019',xmax='2023'),size=2,width=2) +\
+    geom_point(aes(x='2023')) + geom_point(aes(x='2019')) +\
+    labs(x='Open Price',title='Only a few stocks gained value',
+            subtitle='Starting prices from 2019 and 2023') +\
+    scale_color_manual(values={'increased':'green','decreased':'red'}) +\
+    theme(legend_position='none')
+```
+
+Unfortunately, it looks like only a few of these really gained value in the last 4 years. We'll blame covid.
+```{python}
+pdat = pdat.with_columns(DailyDrop=pl.col('Open')-pl.col('Close')) \
+            .with_columns(PosNeg=pl.when(pl.col('DailyDrop')>0).then(pl.lit('Positive')).otherwise(pl.lit('Negative')))
+ggplot(pdat.filter(pl.col('ticker')=='WDAY'),aes(x='Volume',y='DailyDrop',color='PosNeg')) +\
+    geom_point() +\
+    scale_color_manual(values={'Positive':'green','Negative':'red'}) +\
+    scale_x_log10() +\
+    labs(x='Number of Stocks traded',y='Change by the end of the day',title='5 years of daily changes for GM')
+```
+
+It looks like prices move the most on high-trading days, either up or down. That might be something to stay aware of.
